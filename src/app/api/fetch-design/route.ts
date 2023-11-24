@@ -150,8 +150,17 @@ async function extractLogo(page: Page): Promise<ExtractedLogo | null> {
       );
     });
 
-    return [...imageElements, ...elementsWithBackgroundImages].map(
-      (element) => {
+    return [...imageElements, ...elementsWithBackgroundImages]
+      .filter((element) => {
+        const parent = element.parentElement;
+        if (parent) {
+          return (
+            !parent.closest("button") && !parent.closest("*[role='button']")
+          );
+        }
+        return true;
+      })
+      .map((element) => {
         const { x, y, width, height } = element.getBoundingClientRect();
         const tag = element.tagName.toLowerCase();
 
@@ -230,8 +239,7 @@ async function extractLogo(page: Page): Promise<ExtractedLogo | null> {
                 ? 100000
                 : height,
         };
-      },
-    );
+      });
   });
 
   const filteredImageElements = imageElements.filter((imageElement) => {
@@ -312,12 +320,12 @@ function computeLogoAboveTheFoldScore(element: ImageElement, page: Page) {
   if (viewport) {
     const viewportHeight = viewport.height;
 
-    if (element.y + element.height <= viewportHeight / 2) {
-      return 1.0;
+    if (element.y <= viewportHeight / 2) {
+      return 0.5 + ((viewportHeight / 2 - element.y) / viewportHeight) * 0.5;
     }
 
     if (element.y + element.height <= viewportHeight) {
-      return 0.4;
+      return 0.2;
     }
 
     if (element.y <= viewportHeight * 1.05) {
