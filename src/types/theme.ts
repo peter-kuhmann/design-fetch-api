@@ -7,6 +7,7 @@ export type ExtractedDesign = {
 export type ExtractedTheme = {
   logo: ExtractedLogo | null;
   backgroundColor: string;
+  textColor: string;
 };
 
 export type ExtractedLogo =

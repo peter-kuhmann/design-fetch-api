@@ -56,13 +56,8 @@ export default function Home() {
 
       {result && (
         <div className={"grid grid-cols-2 gap-8"}>
-          <div style={{ backgroundColor: result.lightMode.backgroundColor }}>
-            <RenderTheme theme={result.lightMode} />
-          </div>
-
-          <div style={{ backgroundColor: result.darkMode.backgroundColor }}>
-            <RenderTheme theme={result.darkMode} />
-          </div>
+          <RenderTheme theme={result.lightMode} />
+          <RenderTheme theme={result.darkMode} />
         </div>
       )}
     </main>
@@ -71,7 +66,12 @@ export default function Home() {
 
 function RenderTheme({ theme }: { theme: ExtractedTheme }) {
   return (
-    <div>
+    <div
+      className={"rounded-lg p-4"}
+      style={{ backgroundColor: theme.backgroundColor, color: theme.textColor }}
+    >
+      <div className={"mb-4"}>Theme</div>
+
       {theme.logo?.type === "hostedImage" && (
         <img src={theme.logo.src} className={"w-full h-auto"} />
       )}

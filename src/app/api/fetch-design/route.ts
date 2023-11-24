@@ -98,12 +98,59 @@ async function extractTheme(page: Page): Promise<ExtractedTheme> {
   return {
     logo: await extractLogo(page),
     backgroundColor: await extractBackgroundColor(page),
+    textColor: await extractMainTextColor(page),
   };
 }
 
 async function extractBackgroundColor(page: Page): Promise<string> {
   return page.evaluate(() => {
     return getComputedStyle(document.body).backgroundColor;
+  });
+}
+
+async function extractMainTextColor(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const textNodeParents = new Set<Element>();
+    const checkElements: ChildNode[] = [document.body];
+
+    while (checkElements.length > 0) {
+      const next = checkElements.shift();
+      const tagName = (next as any)?.tagName ?? "";
+
+      if (next && tagName !== "script" && tagName !== "code") {
+        if (next.nodeType === 3) {
+          if (
+            next.parentElement &&
+            next.parentElement.tagName.toLowerCase() !== "script"
+          ) {
+            textNodeParents.add(next.parentElement);
+          }
+        } else {
+          checkElements.push(...Array.from(next.childNodes));
+        }
+      }
+    }
+
+    const textColors = new Map<string, number>();
+    textNodeParents.forEach((textNodeParent) => {
+      const computedStyle = getComputedStyle(textNodeParent);
+      const textColor = computedStyle.color;
+
+      textColors.set(
+        textColor,
+        (textColors.get(textColor) ?? 0) +
+          ((textNodeParent as HTMLElement).innerText ?? "").trim().length,
+      );
+    });
+
+    const entriesSortedByAmount = Array.from(textColors.entries());
+    entriesSortedByAmount.sort((a, b) => b[1] - a[1]);
+
+    if (entriesSortedByAmount.length > 0) {
+      return entriesSortedByAmount[0][0];
+    }
+
+    return "#000000";
   });
 }
 
