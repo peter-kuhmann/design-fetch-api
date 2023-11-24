@@ -33,9 +33,9 @@ export async function GET(request: Request) {
     await page.setViewport({ width: 1080, height: 1024 });
 
     await page.goto(url, { waitUntil: "domcontentloaded" });
-    await waitForSettledContent(page);
+    await waitForSettledContent(page, 5000);
     await page.reload({ waitUntil: "domcontentloaded" });
-    await waitForSettledContent(page);
+    await waitForSettledContent(page, 5000);
     const theme = await extractTheme(page);
 
     await page.close();
@@ -110,47 +110,12 @@ async function extractBackgroundColor(page: Page): Promise<string> {
 
 async function extractMainTextColor(page: Page): Promise<string> {
   return page.evaluate(() => {
-    const textNodeParents = new Set<Element>();
-    const checkElements: ChildNode[] = [document.body];
-
-    while (checkElements.length > 0) {
-      const next = checkElements.shift();
-      const tagName = (next as any)?.tagName ?? "";
-
-      if (next && tagName !== "script" && tagName !== "code") {
-        if (next.nodeType === 3) {
-          if (
-            next.parentElement &&
-            next.parentElement.tagName.toLowerCase() !== "script"
-          ) {
-            textNodeParents.add(next.parentElement);
-          }
-        } else {
-          checkElements.push(...Array.from(next.childNodes));
-        }
-      }
-    }
-
-    const textColors = new Map<string, number>();
-    textNodeParents.forEach((textNodeParent) => {
-      const computedStyle = getComputedStyle(textNodeParent);
-      const textColor = computedStyle.color;
-
-      textColors.set(
-        textColor,
-        (textColors.get(textColor) ?? 0) +
-          ((textNodeParent as HTMLElement).innerText ?? "").trim().length,
-      );
-    });
-
-    const entriesSortedByAmount = Array.from(textColors.entries());
-    entriesSortedByAmount.sort((a, b) => b[1] - a[1]);
-
-    if (entriesSortedByAmount.length > 0) {
-      return entriesSortedByAmount[0][0];
-    }
-
-    return "#000000";
+    const dummyText = document.createElement("p");
+    dummyText.innerText = "Hello World";
+    document.body.append(dummyText);
+    const textColor = getComputedStyle(dummyText).color;
+    dummyText.remove();
+    return textColor;
   });
 }
 
@@ -347,12 +312,16 @@ function computeLogoAboveTheFoldScore(element: ImageElement, page: Page) {
   if (viewport) {
     const viewportHeight = viewport.height;
 
-    if (element.y + element.height <= viewportHeight) {
+    if (element.y + element.height <= viewportHeight / 2) {
       return 1.0;
     }
 
-    if (element.y <= viewportHeight * 1.05) {
+    if (element.y + element.height <= viewportHeight) {
       return 0.4;
+    }
+
+    if (element.y <= viewportHeight * 1.05) {
+      return 0.1;
     }
   }
 
@@ -431,9 +400,17 @@ async function computeLogoFilenameScore(element: ImageElement, page: Page) {
 function computeLogoScreenPositionScore(element: ImageElement, page: Page) {
   const viewport = page.viewport();
   if (viewport) {
+    let yfactor = 0.0;
     if (element.y <= viewport.height) {
-      return (viewport.height - element.y) / viewport.height;
+      yfactor = (viewport.height - element.y) / viewport.height;
     }
+
+    let xfactor = 0.0;
+    if (element.x <= viewport.width) {
+      xfactor = (viewport.width - element.x) / viewport.width;
+    }
+
+    return (yfactor + xfactor) / 2;
   }
 
   return 0;
@@ -467,12 +444,11 @@ async function computeLogoSizeScore(element: ImageElement, page: Page) {
     return 1.0;
   }
 
-  if (element.height > 2.5 * documentFontSize) {
+  if (element.height > 3 * documentFontSize) {
     return (
-      0.5 +
       ((element.height - 2.5 * documentFontSize) /
         ((7 - 2.5) * documentFontSize)) *
-        0.5
+      0.5
     );
   }
 
