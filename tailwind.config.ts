@@ -6,7 +6,15 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx,css,scss}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx,css,scss}",
   ],
-  theme: { extend: {} },
-  plugins: [require("daisyui")],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: "var(--font-space-grotesk)",
+      },
+      colors: {
+        base: "#fcfcfc",
+      },
+    },
+  },
 };
 export default config;

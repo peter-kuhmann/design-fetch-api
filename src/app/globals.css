@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  @apply text-[18px];
+}
+
+html, body {
+  @apply w-full h-full relative;
+}
+
+body {
+  @apply font-sans text-black bg-base;
+}
+
+h1 {
+  @apply text-[5.5rem];
+}
+
 .container {
-  @apply w-full max-w-[70rem] mx-auto px-8;
+  @apply w-full max-w-[55rem] mx-auto px-8;
 }
