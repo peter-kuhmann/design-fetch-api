@@ -2,8 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+.default-cursor { cursor: url("/cursor-default.png") 2 2, auto; }
+.text-cursor { cursor: url("/cursor-text.png") 10 2, auto; }
+.pointer-cursor { cursor: url("/cursor-pointer.png") 15 15, auto; }
+.not-allowed-cursor { cursor: url("/cursor-not-allowed.png") 15 15, auto; }
+.cursor-pointer { @apply pointer-cursor; }
+
 html {
-  @apply text-[18px];
+  @apply text-[18px] default-cursor;
+
+}
+
+input {
+  @apply text-cursor;
+}
+
+button {
+  @apply cursor-pointer;
+
+  &:disabled {
+    @apply not-allowed-cursor;
+  }
 }
 
 html, body {
@@ -12,10 +31,17 @@ html, body {
 
 body {
   @apply font-sans text-black bg-base;
+
+  background-image: radial-gradient(
+          rgba(49, 49, 49, 0.15) 2px,
+          transparent 0
+  );
+  background-size: 50px 50px;
+  background-position: center;
 }
 
 h1 {
-  @apply text-[5.5rem];
+  @apply text-[5rem];
 }
 
 .container {
