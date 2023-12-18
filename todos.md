@@ -1,0 +1,4 @@
+- Normalize URL on backend side
+- Cache results
+- Display results
+- Block list
