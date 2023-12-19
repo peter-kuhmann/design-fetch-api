@@ -8,6 +8,8 @@ export type ExtractedTheme = {
   logo: ExtractedLogo | null;
   backgroundColor: string;
   textColor: string;
+  rawTextColor: string;
+  textColorAdjustedForContrast: boolean;
 };
 
 export type ExtractedLogo =

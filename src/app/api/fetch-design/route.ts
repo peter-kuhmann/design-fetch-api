@@ -2,11 +2,42 @@ import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { Page } from "puppeteer";
 import { ExtractedDesign, ExtractedLogo, ExtractedTheme } from "@/types/theme";
+import { getContrast, opacify } from "polished";
+import { text } from "stream/consumers";
 
 export const dynamic = "force-dynamic"; // defaults to force-static
 
+function normalizeUrl(href?: string | null): string | null {
+  if (!href) return null;
+
+  let rawNormalizedUrl = href;
+  const protocolMatch = /^([^:]+):\/\/.+/.exec(rawNormalizedUrl);
+
+  if (protocolMatch) {
+    const protocol = protocolMatch[1];
+
+    if (protocol !== "https") {
+      if (protocol === "http") {
+        rawNormalizedUrl = rawNormalizedUrl.replace(/^http/, "https");
+      } else {
+        throw new Error(`Address had unsupported protocol '${protocol}'.`);
+      }
+    }
+  } else {
+    rawNormalizedUrl = `https://${rawNormalizedUrl}`;
+  }
+
+  const normalizedUrl = new URL(rawNormalizedUrl);
+  // sanitize pathname, hash, search
+  normalizedUrl.pathname = "";
+  normalizedUrl.search = "";
+  normalizedUrl.hash = "";
+
+  return normalizedUrl.href;
+}
+
 export async function GET(request: Request) {
-  const url = new URL(request.url).searchParams.get("url");
+  const url = normalizeUrl(new URL(request.url).searchParams.get("url"));
 
   if (!url) {
     return Response.json(
@@ -95,24 +126,67 @@ async function waitForSettledContent(
 }
 
 async function extractTheme(page: Page): Promise<ExtractedTheme> {
+  const backgroundColor = opacify(1, await extractBackgroundColor(page));
+  const rawTextColor = opacify(1, await extractMainTextColor(page));
+  let textColor = rawTextColor;
+
+  const textColorContrast = getContrast(rawTextColor, backgroundColor);
+  if (textColorContrast < 6) {
+    textColor =
+      getContrast("#fff", backgroundColor) >
+      getContrast("#000", backgroundColor)
+        ? "#fff"
+        : "#000";
+  }
+
   return {
     logo: await extractLogo(page),
-    backgroundColor: await extractBackgroundColor(page),
-    textColor: await extractMainTextColor(page),
+    backgroundColor,
+    textColor,
+    rawTextColor,
+    textColorAdjustedForContrast: rawTextColor !== textColor,
   };
 }
 
 async function extractBackgroundColor(page: Page): Promise<string> {
   return page.evaluate(() => {
-    return getComputedStyle(document.body).backgroundColor;
+    const elements: Element[] = [
+      document.body,
+      ...Array.from(document.body.children),
+    ];
+
+    const elementsSortedBySize = elements
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { element: element, size: rect.width * rect.height };
+      })
+      .sort((a, b) => b.size - a.size);
+
+    const largestElement = elementsSortedBySize[0].element;
+
+    return getComputedStyle(largestElement).backgroundColor;
   });
 }
 
 async function extractMainTextColor(page: Page): Promise<string> {
   return page.evaluate(() => {
+    const elements: Element[] = [
+      document.body,
+      ...Array.from(document.body.children),
+    ];
+
+    const elementsSortedBySize = elements
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { element: element, size: rect.width * rect.height };
+      })
+      .sort((a, b) => b.size - a.size);
+
+    const largestElement = elementsSortedBySize[0].element;
+
     const dummyText = document.createElement("p");
     dummyText.innerText = "Hello World";
-    document.body.append(dummyText);
+    largestElement.append(dummyText);
     const textColor = getComputedStyle(dummyText).color;
     dummyText.remove();
     return textColor;

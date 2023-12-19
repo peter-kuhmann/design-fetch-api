@@ -1,0 +1,14 @@
+.render-extracted-logo {
+  svg {
+    height: 1000000px;
+    max-height: 7rem;
+    width: auto;
+  }
+
+  img {
+    height: 7rem;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+}
