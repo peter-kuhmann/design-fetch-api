@@ -17,7 +17,11 @@ export default function Home() {
       className={"px-16 pt-24 pb-32 min-h-screen flex flex-col justify-center"}
     >
       <div className={"w-full max-w-[40rem] mx-auto"}>
-        <div className={"flex flex-row gap-12 justify-center pr-12 relative"}>
+        <div
+          className={
+            "flex flex-row gap-6 md:gap-10 lg:gap-12 justify-center pr-12 relative"
+          }
+        >
           <div
             className={
               "absolute top-[-2rem] right-0 bg-red-700 text-white px-4 py-0.5 rotate-[-4deg] -skew-x-3"
@@ -27,7 +31,9 @@ export default function Home() {
           </div>
 
           <Image
-            className={"h-[11rem] w-auto hover:rotate-[-8deg] hover:scale-105"}
+            className={
+              "h-[7rem] md:h-[9rem] lg:h-[11rem] w-auto hover:rotate-[-8deg] hover:scale-105"
+            }
             src={"/h-1.svg"}
             alt={"house"}
             width={200}

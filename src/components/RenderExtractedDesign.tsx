@@ -9,7 +9,7 @@ export default function RenderExtractedDesign({
   extractedDesign,
 }: RenderExtractedDesignProps) {
   return (
-    <div className={"grid grid-cols-2 gap-8"}>
+    <div className={"grid grid-cols-1 md:grid-cols-2 gap-8"}>
       <RenderExtractedTheme
         title={"Light Mode"}
         theme={extractedDesign.lightMode}
@@ -50,18 +50,10 @@ function RenderExtractedTheme({
           </div>
 
           <p className={"mb-4 px-2"}>
-            Once upon a time, in the pixelated kingdom of Lorem Ipsum, a humble
-            web designer named CodeWizard struggled with bland templates. One
-            day, armed with coffee and determination, he unleashed the magic of
-            CSS, transforming his designs from dull to dazzling.
-          </p>
-
-          <p className={"px-2"}>
-            Clients rejoiced, and CodeWizard ascended the throne of web
-            greatness, ruling over a kingdom of dynamic pages and
-            laughter-inducing hover effects. And they all coded happily ever
-            after, embracing the quirks of divs and the joy of responsive
-            layouts. The end.
+            The website&apos;s code was so tangled that even the browser asked
+            for directions. The CSS tried to style itself out of the mess, but
+            it ended up with an identity crisis. In the end, the homepage just
+            sighed and said, &quot;404: Sense of Direction Not Found.&quot;
           </p>
         </div>
       </div>

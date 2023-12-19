@@ -9,7 +9,7 @@
 .cursor-pointer { @apply pointer-cursor; }
 
 html {
-  @apply text-[18px] default-cursor;
+  @apply text-[14px] md:text-[16px] lg:text-[18px] default-cursor;
 
 }
 
@@ -41,7 +41,7 @@ body {
 }
 
 h1 {
-  @apply text-[5rem];
+  @apply text-[3.7rem] md:text-[4.2rem] lg:text-[5rem];
 }
 
 .container {
